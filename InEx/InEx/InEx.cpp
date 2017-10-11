@@ -8,8 +8,9 @@
 
 void main()
 {
-	Pool.generateTaskQueue(10);
+	Pool.generateThreadTaskQueue(10);
 	Pool.processThreadQueue();
 
+	Pool.deleteThreadQueue();
 	system("pause");
 }
