@@ -2,9 +2,11 @@
 #define THREAD_POOL_H
 
 #include <iostream>
+#include <functional>
 #include <queue>
 #include <thread>
 #include <mutex>
+#include "Task.h"
 
 class ThreadPool
 {
@@ -15,24 +17,46 @@ public:
 		return instance;
 	}
 
-	void processThreadQueue(std::thread* i_thread_to_add)
+	void generateTaskQueue(int i_amount) 
 	{
-		std::cout << "Tread was added to queue, thread id: \t" << i_thread_to_add->get_id() << std::endl;
-		m_mutex.lock();
+		for (int i = 0; i < i_amount; ++i)
+		{
+			std::function<void()> callfunc = std::bind(&Task::startTask, Task());
+			m_task_pool.push(callfunc);
+		}
 
-		m_thread_pool.push_back(i_thread_to_add);
-		i_thread_to_add->join();
+	}
 
+	void processThreadQueue()
+	{
+		while (!m_task_pool.empty())
+		{
+			std::cout << "##################################" << std::endl;
+
+			std::thread thread(m_task_pool.front());
+			m_mutex.lock();
+
+			std::cout << "Thread was added to queue, thread id: " << thread.get_id() << std::endl;
+			m_thread_pool.push_back(&thread);
+
+			thread.join();
+			deleteThreadFromQueue();
+
+		}
+	}
+	void deleteThreadFromQueue()
+	{	
+		std::cout << "Thread was deleted from queue, thread id: " << m_thread_pool.front()->get_id() << std::endl;
 		m_mutex.unlock();
+
+		m_thread_pool.pop_front();
+		std::cout << "Thread queue size: " << m_thread_pool.size() << std::endl;
 	}
 
-	void deleteThreadQueue()
-	{
-		m_thread_pool.clear();
-		std::cout << "Thread queue size equals: \t" << m_thread_pool.size() << std::endl;
-	}
 private:
 	std::deque<std::thread*> m_thread_pool;
+	std::queue<std::function<void()>> m_task_pool;
+	
 	std::mutex m_mutex;
 
 private:

@@ -7,36 +7,22 @@
 class Task
 {
 public:
-	void startTask() 
+	virtual void startTask()
 	{
 		if( m_task_in_progress )
 		{
 			std::random_device rd;
 			std::mt19937 gen(rd());
-			std::uniform_int_distribution<> dis(50, 10000);
-			std::cout << "\nSleeping... \t" << "Thread id: \t" << std::this_thread::get_id() << std::endl;
+			std::uniform_int_distribution<> dis(50, 100000);
+			std::cout << "Sleeping... \n" << "Thread id: " << std::this_thread::get_id() << std::endl;
 			Sleep(dis(gen));
 		}	
 		else
 			m_task_in_progress = true;
 	}
 
-	void stopTask()
-	{
-		std::cout << "Stopping task execution from thread:"<< std::this_thread::get_id() << std::endl;
-		m_task_in_progress = false;
-	}
-
-	bool checkTaskStatus()
-	{
-		return m_task_in_progress;
-	}
-
 	Task() : m_task_in_progress(true) {};
-	~Task()
-	{
-		//stopTask();
-	};
+	virtual ~Task(){};
 private:
 
 	bool m_task_in_progress;
